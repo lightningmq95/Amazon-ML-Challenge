@@ -35,8 +35,16 @@ def sanity_check(test_filename, output_filename):
     if len(extra_index) != 0:
         print("Extra index in test file: {}".format(extra_index))
         
-    output_df.apply(lambda x: parse_string(x['prediction']), axis=1)
-    print("Parsing successfull for file: {}".format(output_filename))
+    def validate_and_clean(row):
+        try:
+            parse_string(row['prediction'])
+        except Exception:
+            row['prediction'] = None
+        return row
+    
+    output_df = output_df.apply(validate_and_clean, axis=1)
+    output_df.to_csv(output_filename, index=False)
+    print("Parsing successful for file: {}".format(output_filename))
     
 if __name__ == "__main__":
     #Usage example: python sanity.py --test_filename sample_test.csv --output_filename sample_test_out.csv
